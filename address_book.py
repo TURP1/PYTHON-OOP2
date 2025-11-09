@@ -4,6 +4,7 @@ from collections import UserDict
 from typing import Optional, List
 from datetime import datetime, date, timedelta
 from functools import wraps
+import pickle
 
 
 class Field:
@@ -138,6 +139,19 @@ class AddressBook(UserDict):
         return upcoming
 
 
+def save_data(book, filename: str = "addressbook.pkl"):
+    with open(filename, "wb") as f:
+        pickle.dump(book, f)
+
+
+def load_data(filename: str = "addressbook.pkl") -> "AddressBook":
+    try:
+        with open(filename, "rb") as f:
+            return pickle.load(f)
+    except FileNotFoundError:
+        return AddressBook()
+
+
 def input_error(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -246,13 +260,14 @@ def birthdays(args, book: AddressBook):
 
 
 def main():
-    book = AddressBook()
+    book = load_data()
     print("Welcome to the assistant bot!")
     while True:
         user_input = input("Enter a command: ")
         command, args = parse_input(user_input)
 
         if command in ["close", "exit"]:
+            save_data(book)
             print("Good bye!")
             break
         elif command == "hello":
